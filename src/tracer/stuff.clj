@@ -47,6 +47,7 @@
           
 
 (defmacro dbg [x]
+  (println "DBG" (pr-str x))
   (let [is-fn?
         (and
           (symbol? x)

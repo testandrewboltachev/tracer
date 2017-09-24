@@ -51,13 +51,8 @@
   (if is-fn?
     `(dbgfn '~x ~x)
     (do
-      (println "macro called" (str \" x \") "on the way")
+      (debug (str "macro called" (str \" x \") "on the way"))
       x))))
-
-(defmacro dbgfn [expr]
-  `(do
-    (debug '~expr)
-    ~expr))
 
 (go-loop
   []
@@ -66,5 +61,5 @@
 	  (let [data1 (<! stuff-ch)]
   	  (newline)
 	    (println ">>>" (.toString (new java.util.Date)))
-  	  ((dbgfn cprint) "Hello world!")))
+  	  ((dbg cprint) "Hello world!")))
     	(recur))

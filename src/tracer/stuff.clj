@@ -44,12 +44,8 @@
     (let [result (apply f args)]
       (debug "calling" name_ "with" (pr-str args) "returned" (pr-str result))
       result)))
-          
 
-(defn dbg-wrapper [f & args]
-  (apply f args))
-
-(defmacro dbg [& body] (if (true? (:macro (meta (resolve (first body))))) body `(dbg-wrapper ~@body)))
+(defmacro dbg [x] (if (true? (:macro (meta (resolve x)))) x `(dbgfn '~x ~x)))
 
 
 
@@ -81,8 +77,8 @@
   	  ;(println "bar" (when true "Hello world222!"))
          )
            
-           (println (dbg + 1 2))
-           (println (dbg when true 42))
+           (println ((dbg +) 1 2))
+           (println ((dbg when) true 54))
            )
   (newline)
   (newline)

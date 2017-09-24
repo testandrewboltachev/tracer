@@ -43,10 +43,9 @@
           (symbol? x)
           (try
             (do
-              (resolve x)
+              (eval x)
               true)
             (catch Exception e
-              (println e)
               false)))]
   (if is-fn?
     `(dbgfn '~x ~x)

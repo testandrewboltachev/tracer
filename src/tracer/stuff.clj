@@ -18,7 +18,13 @@
    :number 16})
 
 (defn debug [expr]
-	(let [{:keys [uri prefix id]} *tracer-config*]
+	(let [{:keys [uri prefix id]} (merge
+                                 {:uri "http://127.0.0.1:5984/cljdebug/"
+														 :prefix "abcdef-"}
+                                  
+                                 *tracer-config*
+                                  )
+                                 ]
 		(client/put
 			(str uri prefix "-" (clojure.string/replace (.toString (java.util.Date.)) " " "_") "-" (rand-str 4))
 		  {:body (json/generate-string
@@ -50,7 +56,7 @@
   (if is-fn?
     `(dbgfn '~x ~x)
     (do
-      (debug (str "macro called" (str \" x \") "on the way"))
+      ;(debug (str "macro called" (str \" x \") "on the way"))
       x))))
 
 (go-loop

@@ -3,7 +3,8 @@
     [clojure.core.async :refer [<! chan go-loop]]
     [puget.printer :refer [cprint]]
 		[clj-http.client :as client]
-    [cheshire.core :as json]))
+    [cheshire.core :as json]
+    [clojure.tools.logging :as log]))
 
 (def stuff-ch (chan))
 
@@ -17,7 +18,9 @@
 	 :prefix "123abc"
    :number 16})
 
-(defn debug [expr]
+(defn debug [& words]
+  (let [expr (clojure.string/join " " words)]
+    #_(println expr)
 	(let [{:keys [uri prefix id]} (merge
                                  {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}
@@ -33,13 +36,13 @@
                 :data ((when (string? expr) identity pr-str) expr)})
 		   :headers {}
   		 :socket-timeout 1000  ;; in milliseconds
-		   :conn-timeout 1000})))
+		   :conn-timeout 1000}))))
 
 (defn dbgfn [name_ f]
   (fn [& args]
-    (debug (str "you are calling" name_ "with" (pr-str args)))
+    (debug "you are calling" name_ "with" (pr-str args))
     (let [result (apply f args)]
-      (debug (str "calling" name_ "with" (pr-str args) "returned" (pr-str result)))
+      (debug "calling" name_ "with" (pr-str args) "returned" (pr-str result))
       result)))
           
 
@@ -56,7 +59,7 @@
   (if is-fn?
     `(dbgfn '~x ~x)
     (do
-      ;(debug (str "macro called" (str \" x \") "on the way"))
+      ;(debug "macro called" (str \" x \") "on the way")
       x))))
 
 (go-loop
@@ -66,5 +69,5 @@
 	  (let [data1 (<! stuff-ch)]
   	  (newline)
 	    (println ">>>" (.toString (new java.util.Date)))
-  	  ((dbg cprint) "Hello world!")))
+  	  ((dbg log/warn) "Hello world!" 1 2)))
     	(recur))

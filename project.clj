@@ -6,5 +6,6 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.3.443"]
                  [clojure-watch "0.1.11"]
-                 [mvxcvi/puget "1.0.1"]]
+                 [mvxcvi/puget "1.0.1"]
+                 [clj-http "3.7.0"]]
   :main tracer.core)

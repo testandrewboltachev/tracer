@@ -46,14 +46,22 @@
       result)))
           
 
-(defmacro dbg [x]
-  (println "DBG" (pr-str x))
+(defn dbg-wrapper [f & args]
+  (apply f args))
+
+(defmacro dbg [& body] (if (true? (:macro (meta (resolve (first body))))) body `(dbg-wrapper ~@body)))
+
+
+
+#_(defmacro dbg [x]
   (let [is-fn?
         (and
           (symbol? x)
           (try
             (do
-              (eval x)
+              (println "we're ready to eval" (str \" (pr-str x) \"))
+              (true? (:macro (meta (resolve x))))
+              (println "eval done" (str \" (pr-str x) \"))
               true)
             (catch Exception e
               false)))]
@@ -68,7 +76,17 @@
 	(binding [*tracer-config* {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}]
 	  (let [data1 (<! stuff-ch)]
-  	  (newline)
-	    (println ">>>" (.toString (new java.util.Date)))
-  	  ((dbg log/warn) "Hello world!" 1 2)))
+
+  	  ;(println "foo" ((dbg when) true "Hello world111!"))
+  	  ;(println "bar" (when true "Hello world222!"))
+         )
+           
+           (println (dbg + 1 2))
+           (println (dbg when true 42))
+           )
+  (newline)
+  (newline)
+  (newline)
+  (newline)
+  (newline)
     	(recur))

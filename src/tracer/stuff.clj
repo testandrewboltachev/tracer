@@ -24,10 +24,35 @@
 		  {:body (json/generate-string
                {:prefix prefix
                 :id id
-                :data (pr-str expr)})
+                :data ((when (string? expr) identity pr-str) expr)})
 		   :headers {}
   		 :socket-timeout 1000  ;; in milliseconds
 		   :conn-timeout 1000})))
+
+(defn dbgfn [name_ f]
+  (fn [& args]
+    (debug (str "you are calling" name_ "with" (pr-str args)))
+    (let [result (apply f args)]
+      (debug (str "calling" name_ "with" (pr-str args) "returned" (pr-str result)))
+      result)))
+          
+
+(defmacro dbg [x]
+  (let [is-fn?
+        (and
+          (symbol? x)
+          (try
+            (do
+              (resolve x)
+              true)
+            (catch Exception e
+              (println e)
+              false)))]
+  (if is-fn?
+    `(dbgfn '~x ~x)
+    (do
+      (println "macro called" (str \" x \") "on the way")
+      x))))
 
 (defmacro dbgfn [expr]
   `(do
@@ -41,5 +66,5 @@
 	  (let [data1 (<! stuff-ch)]
   	  (newline)
 	    (println ">>>" (.toString (new java.util.Date)))
-  	  (dbgfn (cprint "Hello world!"))))
+  	  ((dbgfn cprint) "Hello world!")))
     	(recur))

@@ -19,7 +19,7 @@ doall dotimes map-indexed keep keep-indexed
 *source-path* *clojure-version* *read-eval* 
 *fn-loader* *1 *2 *3 *e
 
-fn*
+fn* let*
 
 def- defn defn- defmacro defmulti defmethod 
 defstruct defonce declare definline definterface 

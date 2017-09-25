@@ -39,10 +39,28 @@
   		 :socket-timeout 1000  ;; in milliseconds
 		   :conn-timeout 1000}))))
 
+(defn apply2
+  ([f]
+   (f))
+  ([f a]
+   (f a))
+  ([f a b]
+   (f a b))
+  ([f a b c]
+   (f a b c))
+  ([f a b c d]
+   (f a b c d))
+  ([f a b c d e]
+   (f a b c d e))
+  ([f a b c d e f]
+   (f a b c d e f))
+  ([f a b c d e f & args]
+   (apply f a b c d e f args)))
+
 (defn dbgfn [name_ f]
   (fn [& args]
     (debug "you are calling" name_ "with" (pr-str args))
-    (let [result (apply f args)]
+    (let [result (apply apply2 f args)]
       (debug "calling" name_ "with" (pr-str args) "returned" (pr-str result))
       result)))
 

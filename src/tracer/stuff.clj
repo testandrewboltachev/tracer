@@ -25,7 +25,7 @@
 	(let [{:keys [uri prefix id]} (merge
                                  {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}
-                                  
+
                                  *tracer-config*
                                   )
                                  ]
@@ -50,6 +50,26 @@
 
 (defmacro dbg2 [body] (if (true? (:macro (meta (resolve (first body))))) ~@body 'nothing))
 
+(defn is-not-reserved [smbl]
+  (let [svalue
+        (str smbl)]
+  (not
+    (or
+      ; ...
+      (#{'def 'defn 'defn- 'defmacro 'if 'do 'let 'quote 'var 'fn 'loop 'recur
+         'throw 'try 'catch 'monitor-enter 'monitor-exit
+         'print 'println 'pr 'prn
+         'for 'ns
+         ;'u/prog1
+         } smbl)
+      (symbols smbl)
+      (clojure.string/starts-with? svalue ".")
+      (clojure.string/ends-with? svalue ".")
+      (clojure.string/starts-with? svalue "*")
+      (clojure.string/ends-with? svalue "*")
+      ))))
+
+
 (defn add-dbgfn [macroexpanded-code]
   (clojure.walk/postwalk
     (fn [node]
@@ -64,7 +84,7 @@
           (list? node)
           ((complement empty?) node)
           (symbol? (first node))
-          ((complement contains?) symbols (first node)))
+          (is-not-reserved (first node)))
         (cons
           (list 'dbgfn (-> node first str) (first node))
           (rest node))
@@ -105,12 +125,12 @@
 	(binding [*tracer-config* {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}]
 	  (let [data1 (<! stuff-ch)
-          
+
           plus42 (fn [& args ] (apply + 42 args))]
 
   	  ;(println "foo" ((dbg when) true "Hello world111!"))
   	  ;(println "bar" (when true "Hello world222!"))
-           
+
            (println
              (dbg
                (-> 1 (plus42 10)))

@@ -21,8 +21,8 @@
 
 (defn debug [& words]
   (let [expr (clojure.string/join " " words)]
-    (println expr)
-	#_(let [{:keys [uri prefix id]} (merge
+    #_(println expr)
+	(let [{:keys [uri prefix id]} (merge
                                  {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}
                                   

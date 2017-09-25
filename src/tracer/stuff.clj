@@ -45,7 +45,11 @@
       (debug "calling" name_ "with" (pr-str args) "returned" (pr-str result))
       result)))
 
-(defmacro dbg [x] (if (true? (:macro (meta (resolve x)))) x `(dbgfn '~x ~x)))
+(defn nothing [& _])
+
+(defmacro dbg2 [body] (if (true? (:macro (meta (resolve (first body))))) ~@body 'nothing))
+
+(defmacro dbg [body] body)
 
 
 
@@ -78,7 +82,12 @@
          )
            
            (println ((dbg +) 1 2))
-           (println ((dbg when) true 54))
+           (println
+             (clojure.walk/macroexpand-all
+             (clojure.walk/macroexpand-all
+             '((dbg ->)
+                     42
+                     (+ 54)))))
            )
   (newline)
   (newline)

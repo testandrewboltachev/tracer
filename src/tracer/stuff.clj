@@ -83,11 +83,9 @@
            
            (println ((dbg +) 1 2))
            (println
-             (clojure.walk/macroexpand-all
-             (clojure.walk/macroexpand-all
-             '((dbg ->)
-                     42
-                     (+ 54)))))
+             (dbg (-> 1 (+ 10)))
+             )
+
            )
   (newline)
   (newline)

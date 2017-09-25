@@ -30,7 +30,7 @@
                                   )
                                  ]
 		(client/put
-			(str uri prefix "-" (clojure.string/replace (.toString (java.util.Date.)) " " "_") "-" (rand-str 4))
+			(str uri prefix "-" (clojure.string/replace (.toString (java.util.Date.)) " " "_") "-" (rand-str 32))
 		  {:body (json/generate-string
                {:prefix prefix
                 :id id

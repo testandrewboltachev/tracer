@@ -49,7 +49,7 @@
 
 (defmacro dbg2 [body] (if (true? (:macro (meta (resolve (first body))))) ~@body 'nothing))
 
-(defmacro dbg [body] body)
+(defmacro dbg [body] (clojure.walk/macroexpand-all body))
 
 
 

@@ -77,8 +77,8 @@
   (->
     body
     clojure.walk/macroexpand-all
-    add-dbgfn
-    )]
+    add-dbgfn)]
+    (prn code)
     code))
 
 

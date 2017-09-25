@@ -4,7 +4,8 @@
     [puget.printer :refer [cprint]]
 		[clj-http.client :as client]
     [cheshire.core :as json]
-    [clojure.tools.logging :as log]))
+    [clojure.tools.logging :as log]
+    [tracer.symbols :refer [symbols]]))
 
 (def stuff-ch (chan))
 
@@ -20,8 +21,8 @@
 
 (defn debug [& words]
   (let [expr (clojure.string/join " " words)]
-    #_(println expr)
-	(let [{:keys [uri prefix id]} (merge
+    (println expr)
+	#_(let [{:keys [uri prefix id]} (merge
                                  {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}
                                   
@@ -49,8 +50,36 @@
 
 (defmacro dbg2 [body] (if (true? (:macro (meta (resolve (first body))))) ~@body 'nothing))
 
-(defmacro dbg [body] (clojure.walk/macroexpand-all body))
+(defn add-dbgfn [macroexpanded-code]
+  (clojure.walk/postwalk
+    (fn [node]
+      (let [node (cond->>
+                   node
+                   (and
+                     (sequential? node)
+                     ((complement vector?) node))
+                   (apply list))]
+      (if
+        (and
+          (list? node)
+          ((complement empty?) node)
+          (symbol? (first node))
+          ((complement contains?) symbols (first node)))
+        (cons
+          (list 'dbgfn (-> node first str) (first node))
+          (rest node))
+        node)))
+    macroexpanded-code))
 
+
+(defmacro dbg [body]
+  (let [code
+  (->
+    body
+    clojure.walk/macroexpand-all
+    add-dbgfn
+    )]
+    code))
 
 
 #_(defmacro dbg [x]
@@ -75,17 +104,19 @@
   []
 	(binding [*tracer-config* {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}]
-	  (let [data1 (<! stuff-ch)]
+	  (let [data1 (<! stuff-ch)
+          
+          plus42 (fn [& args ] (apply + 42 args))]
 
   	  ;(println "foo" ((dbg when) true "Hello world111!"))
   	  ;(println "bar" (when true "Hello world222!"))
-         )
            
-           (println ((dbg +) 1 2))
            (println
-             (dbg (-> 1 (+ 10)))
+             (dbg
+               (-> 1 (plus42 10)))
              )
 
+           )
            )
   (newline)
   (newline)

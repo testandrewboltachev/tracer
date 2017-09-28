@@ -113,24 +113,25 @@
 (defn add-dbgfn [macroexpanded-code]
   (potemkin.walk/prewalk
   (fn [node]
+    (println node)
       (if
         (and
           (list? node)
           ((complement empty?) node)
           (symbol? (first node))
-          (is-not-reserved (first node))
-          )
+          (is-not-reserved (first node)))
         `(let* []
            (clojure.core/push-thread-bindings
              (clojure.core/hash-map (var *tracer-level*) (inc (or *tracer-level* 0))))
            (try
               ~(cons
                 `(dbgfn ~(-> node first str) ~(merge
-                                                   (meta node)
-                                                   `{:level ~'*tracer-level*}) (first node))
+                                                (meta node)
+                                                `{:level ~'*tracer-level*}) (first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
-       (cond->
+        ((if (-> node meta some?) #(with-meta % nil) identity) node)
+       #_(cond->
          node
          (some? (meta node))
          (vary-meta
@@ -159,6 +160,7 @@
     )
         code (add-dbgfn code)
         ]
+    (println "here's the code")
     (cprint code {:print-meta true})
     (newline)
     (newline)

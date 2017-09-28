@@ -118,7 +118,7 @@
           (list? node)
           ((complement empty?) node)
           (symbol? (first node))
-          ;(is-not-reserved (first node))
+          (is-not-reserved (first node))
           )
         (cons
                 `(~'dbgfn ~(-> node first str) (~'merge

@@ -126,25 +126,50 @@
           (is-not-reserved (first node)))
         `(let* []
            (clojure.core/push-thread-bindings
-             (clojure.core/hash-map (var tracer.stuff/*tracer-level*) (inc (or tracer.stuff/*tracer-level* 0))))
+             (clojure.core/hash-map (var *tracer-level*) (inc (or *tracer-level* 0))))
            (try
               ~(cons
-                (list 'dbgfn (-> node first str) {:level tracer.stuff/*tracer-level*} (first node))
+                (list 'dbgfn (-> node first str) (merge
+                                                   (meta node)
+                                                   {:level *tracer-level*}) (first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
         node)))
     macroexpanded-code))
 
+(defn macroexpand-all
+  [form]
+  (potemkin.walk/prewalk
+    (fn [x]
+      (when (seq? x)
+        (binding [*print-meta* true]
+          (println \tab \tab (meta x) x)
+      (println
+        (with-meta
+          (macroexpand x)
+          (meta x))))
+        )
+      (if
+        (seq? x)
+        (with-meta
+          (macroexpand x)
+          (meta x))
+        x))
+    form))
+
 
 (defmacro dbg [body]
+  (binding [*print-meta* true]
   (let [code
   (->
     body
-    clojure.walk/macroexpand-all
-    add-dbgfn)]
+    macroexpand-all
+    ;add-dbgfn
+    )]
+    (newline)
     (prn code)
     (newline)
-    code))
+    code)))
 
 
 #_(defmacro dbg [x]
@@ -178,7 +203,7 @@
 
            (println
              (dbg
-               (-> 1 (plus42 10)))
+               ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 10))))
              )
 
            )

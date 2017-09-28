@@ -9,5 +9,6 @@
                  [clojure-watch "0.1.11"]
                  [mvxcvi/puget "1.0.1"]
                  [clj-http "3.7.0"]
-                 [cheshire "5.8.0"]]
+                 [cheshire "5.8.0"]
+                 [potemkin "0.4.4"]]
   :main tracer.core)

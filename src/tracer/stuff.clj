@@ -120,23 +120,24 @@
           (symbol? (first node))
           (is-not-reserved (first node))
           )
-        (cons
-                `(~'dbgfn ~(-> node first str) (~'merge
-                                                   ~(meta node)
-                                                   {:level *tracer-level*}) ~(first node))
-                (rest node))
-        #_(let* []
+        `(let* []
            (clojure.core/push-thread-bindings
              (clojure.core/hash-map (var *tracer-level*) (inc (or *tracer-level* 0))))
            (try
               ~(cons
-                `(dbgfn ~(-> node first str) (merge
-                                                   ~meta_
-                                                   {:level *tracer-level*}) ~(first node))
+                `(dbgfn ~(-> node first str) ~(merge
+                                                   (meta node)
+                                                   `{:level ~'*tracer-level*}) (first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
-       node 
-        ))
+       (cond->
+         node
+         (some? (meta node))
+         (vary-meta
+           (fn [meta_]
+             (let [original-meta_ (dissoc meta_ :column :line)]
+               (when-not (empty? original-meta_)
+                 original-meta_)))))))
   macroexpanded-code))
 
 (defn macroexpand-all

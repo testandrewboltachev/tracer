@@ -157,6 +157,8 @@
     macroexpand-all
     add-dbgfn
     )]
+    (cprint code {:print-meta true})
+    (newline)
     code)))
 
 

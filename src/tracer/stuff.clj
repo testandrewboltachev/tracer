@@ -5,7 +5,8 @@
 		[clj-http.client :as client]
     [cheshire.core :as json]
     [clojure.tools.logging :as log]
-    [tracer.symbols :refer [symbols]]))
+    [tracer.symbols :refer [symbols]]
+    [potemkin.walk]))
 
 (def stuff-ch (chan))
 
@@ -141,19 +142,9 @@
   [form]
   (potemkin.walk/prewalk
     (fn [x]
-      (when (seq? x)
-        (binding [*print-meta* true]
-          (println \tab \tab (meta x) x)
-      (println
-        (with-meta
-          (macroexpand x)
-          (meta x))))
-        )
       (if
         (seq? x)
-        (with-meta
-          (macroexpand x)
-          (meta x))
+        (macroexpand x)
         x))
     form))
 

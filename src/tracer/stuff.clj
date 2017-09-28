@@ -164,11 +164,8 @@
   (->
     body
     macroexpand-all
-    ;add-dbgfn
+    add-dbgfn
     )]
-    (newline)
-    (prn code)
-    (newline)
     code)))
 
 

@@ -52,14 +52,8 @@
    (f a b c d))
   ([f a b c d e]
    (f a b c d e))
-  ([f a b c d e f]
-   (f a b c d e f))
-  ([f a b c d e f & args]
-   (try
-     (apply f a b c d e f args)
-     (catch Exception ex
-       (cprint [f a b c d e f args])
-       (throw ex)))))
+  ([f a b c d e & args]
+   (apply f a b c d e args)))
 
 (defn dbgfn [name_ f]
   (fn [& args]

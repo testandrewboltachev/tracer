@@ -10,6 +10,7 @@
 (def stuff-ch (chan))
 
 (def ^:dynamic *tracer-config* nil)
+(def ^:dynamic *tracer-level* nil)
 
 (defn rand-str [len]
   (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
@@ -19,9 +20,10 @@
 	 :prefix "123abc"
    :number 16})
 
-(defn debug [& words]
-  (let [expr (clojure.string/join " " words)]
-    #_(println expr)
+(defn map-vals [f m]
+  (zipmap (keys m) (map f (vals m))))
+
+(defn debug [data]
 	(let [{:keys [uri prefix id]} (merge
                                  {:uri "http://127.0.0.1:5984/cljdebug/"
 														 :prefix "abcdef-"}
@@ -32,12 +34,26 @@
 		(client/put
 			(str uri prefix "-" (clojure.string/replace (.toString (java.util.Date.)) " " "_") "-" (rand-str 32))
 		  {:body (json/generate-string
-               {:prefix prefix
-                :id id
-                :data ((when (string? expr) identity pr-str) expr)})
+               (merge
+                 {:prefix prefix
+                  :id id
+                  }
+                 (map-vals
+                   pr-str
+                   #_(fn [v]
+                     (if
+                       (or
+                         (nil? v)
+                         (true? v)
+                         (false? v)
+                         (integer? v)
+                         (string? v)
+                         )
+                       ))
+                   data)))
 		   :headers {}
   		 :socket-timeout 1000  ;; in milliseconds
-		   :conn-timeout 1000}))))
+		   :conn-timeout 1000})))
 
 (defn apply2
   ([f]
@@ -55,11 +71,18 @@
   ([f a b c d e & args]
    (apply f a b c d e args)))
 
-(defn dbgfn [name_ f]
+(defn dbgfn [name_ meta_ f]
   (fn [& args]
-    (debug "you are calling" name_ "with" (pr-str args))
+    (debug {:type :call
+            :name name_
+            :meta meta_
+            :args args})
     (let [result (apply apply2 f args)]
-      (debug "calling" name_ "with" (pr-str args) "returned" (pr-str result))
+      (debug {:type :result
+              :name name_
+              :meta meta_
+              :args args
+              :result result})
       result)))
 
 (defn nothing [& _])
@@ -101,9 +124,14 @@
           ((complement empty?) node)
           (symbol? (first node))
           (is-not-reserved (first node)))
-        (cons
-          (list 'dbgfn (-> node first str) (first node))
-          (rest node))
+        `(let* []
+           (clojure.core/push-thread-bindings
+             (clojure.core/hash-map (var tracer.stuff/*tracer-level*) (inc (or tracer.stuff/*tracer-level* 0))))
+           (try
+              ~(cons
+                (list 'dbgfn (-> node first str) {:level tracer.stuff/*tracer-level*} (first node))
+                (rest node))
+             (finally (clojure.core/pop-thread-bindings))))
         node)))
     macroexpanded-code))
 

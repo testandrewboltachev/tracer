@@ -111,32 +111,33 @@
 
 
 (defn add-dbgfn [macroexpanded-code]
-  (clojure.walk/postwalk
-    (fn [node]
-      (let [node (cond->>
-                   node
-                   (and
-                     (sequential? node)
-                     ((complement vector?) node))
-                   (apply list))]
+  (potemkin.walk/prewalk
+  (fn [node]
       (if
         (and
           (list? node)
           ((complement empty?) node)
           (symbol? (first node))
-          (is-not-reserved (first node)))
-        `(let* []
+          ;(is-not-reserved (first node))
+          )
+        (cons
+                `(~'dbgfn ~(-> node first str) (~'merge
+                                                   ~(meta node)
+                                                   {:level *tracer-level*}) ~(first node))
+                (rest node))
+        #_(let* []
            (clojure.core/push-thread-bindings
              (clojure.core/hash-map (var *tracer-level*) (inc (or *tracer-level* 0))))
            (try
               ~(cons
-                (list 'dbgfn (-> node first str) (merge
-                                                   (meta node)
-                                                   {:level *tracer-level*}) (first node))
+                `(dbgfn ~(-> node first str) (merge
+                                                   ~meta_
+                                                   {:level *tracer-level*}) ~(first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
-        node)))
-    macroexpanded-code))
+       node 
+        ))
+  macroexpanded-code))
 
 (defn macroexpand-all
   [form]
@@ -144,22 +145,23 @@
     (fn [x]
       (if
         (seq? x)
-        (macroexpand x)
+        (with-meta (macroexpand x) (meta x))
         x))
     form))
 
 
 (defmacro dbg [body]
-  (binding [*print-meta* true]
   (let [code
   (->
     body
     macroexpand-all
-    add-dbgfn
-    )]
+    )
+        code (add-dbgfn code)
+        ]
     (cprint code {:print-meta true})
     (newline)
-    code)))
+    (newline)
+    code))
 
 
 #_(defmacro dbg [x]
@@ -193,8 +195,7 @@
 
            (println
              (dbg
-               ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 10))))
-             )
+               ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 ^:foo1 (inc 10))))))
 
            )
            )

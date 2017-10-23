@@ -157,7 +157,7 @@
 (defn with-meta-or-identity [obj new-meta]
   (if (and
         (instance? clojure.lang.IMeta obj)
-        (instance? clojure.lang.Obj obj))
+        (instance? clojure.lang.IObj obj))
     (with-meta obj new-meta)
     obj))
 

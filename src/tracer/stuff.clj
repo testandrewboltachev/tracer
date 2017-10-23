@@ -6,7 +6,24 @@
     [cheshire.core :as json]
     [clojure.tools.logging :as log]
     [tracer.symbols :refer [symbols]]
-    [potemkin.walk]))
+    [potemkin.walk])
+  
+  
+  (:require [clojure.java.jdbc :as jdbc]
+            [clojure.string :as str]
+            [clojure.tools.logging :as log]
+            [medley.core :as m]
+            [metabase.util :as u]
+            [metabase.util.schema :as su]
+            [schema.core :as s])
+  (:import java.sql.SQLException)
+  
+  
+  
+  
+  
+  
+  )
 
 (def stuff-ch (chan))
 
@@ -111,12 +128,12 @@
 
 
 (defn add-dbgfn [macroexpanded-code]
-  (potemkin.walk/prewalk
+  (clojure.walk/postwalk
   (fn [node]
-    (println node)
       (if
         (and
-          (list? node)
+          (sequential? node)
+          ((complement vector?) node)
           ((complement empty?) node)
           (symbol? (first node))
           (is-not-reserved (first node)))
@@ -127,28 +144,41 @@
               ~(cons
                 `(dbgfn ~(-> node first str) ~(merge
                                                 (meta node)
-                                                `{:level ~'*tracer-level*}) (first node))
+                                                `{:level '*tracer-level*})
+                        ~(first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
-        ((if (-> node meta some?) #(with-meta % nil) identity) node)
-       #_(cond->
-         node
-         (some? (meta node))
-         (vary-meta
-           (fn [meta_]
-             (let [original-meta_ (dissoc meta_ :column :line)]
-               (when-not (empty? original-meta_)
-                 original-meta_)))))))
+        ((if (-> node meta some?) #(with-meta % nil) identity) node)))
   macroexpanded-code))
+
+
+(def ^:dynamic *the-macroexpand-level* nil)
+
+(defn with-meta-or-identity [obj new-meta]
+  (if (instance? clojure.lang.IMeta obj)
+    (with-meta obj new-meta)
+    obj))
 
 (defn macroexpand-all
   [form]
   (potemkin.walk/prewalk
     (fn [x]
+      (let [r
       (if
         (seq? x)
-        (with-meta (macroexpand x) (meta x))
-        x))
+
+        (with-meta-or-identity
+          (try
+            (macroexpand x)
+            (catch Exception e
+              (println "Can't macroexpand")
+              (cprint x)
+              ))
+          (meta x))
+
+        x)]
+        (println (pr-str x) "return" (pr-str r))
+        r))
     form))
 
 
@@ -158,6 +188,12 @@
     body
     macroexpand-all
     )
+        _ (do
+    (println "here's the code1")
+    (cprint code {:print-meta true})
+    (newline)
+    (newline)
+            )
         code (add-dbgfn code)
         ]
     (println "here's the code")
@@ -166,24 +202,6 @@
     (newline)
     code))
 
-
-#_(defmacro dbg [x]
-  (let [is-fn?
-        (and
-          (symbol? x)
-          (try
-            (do
-              (println "we're ready to eval" (str \" (pr-str x) \"))
-              (true? (:macro (meta (resolve x))))
-              (println "eval done" (str \" (pr-str x) \"))
-              true)
-            (catch Exception e
-              false)))]
-  (if is-fn?
-    `(dbgfn '~x ~x)
-    (do
-      ;(debug "macro called" (str \" x \") "on the way")
-      x))))
 
 (go-loop
   []
@@ -195,10 +213,26 @@
 
   	  ;(println "foo" ((dbg when) true "Hello world111!"))
   	  ;(println "bar" (when true "Hello world222!"))
+         (let [node '(plus42 1 (inc 10))]
+    (println
+      "wow"
+      (and
+          (list? node)
+          ((complement empty?) node)
+          (symbol? (first node))
+          (is-not-reserved (first node)))))
 
-           (println
-             (dbg
-               ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 ^:foo1 (inc 10))))))
+    (println
+      (dbg
+        ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 ^:foo1 (inc 10))))))
+
+(dbg
+  
+  (cond)
+  #_(defn myfn1 []
+       (cond true 1)
+       ))
+
 
            )
            )

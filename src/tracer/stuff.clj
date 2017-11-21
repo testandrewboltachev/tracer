@@ -144,7 +144,8 @@
 (defn with-meta-or-identity [obj new-meta]
   (if (and
         (instance? clojure.lang.IMeta obj)
-        (instance? clojure.lang.IObj obj))
+        (instance? clojure.lang.IObj obj)
+        ((complement instance?) clojure.lang.Namespace obj))
     (try
       (with-meta obj new-meta)
 

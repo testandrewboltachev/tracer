@@ -113,6 +113,12 @@
       (clojure.string/ends-with? svalue "*")
       ))))
 
+(defn meta-or-nil [obj]
+  (when
+    (and
+      (instance? clojure.lang.IMeta obj)
+      (instance? clojure.lang.IObj obj))
+    (meta obj)))
 
 (defn add-dbgfn [macroexpanded-code]
   (clojure.walk/postwalk
@@ -135,7 +141,7 @@
                         ~(first node))
                 (rest node))
              (finally (clojure.core/pop-thread-bindings))))
-        ((if (-> node meta some?) #(with-meta % nil) identity) node)))
+        ((if (-> node meta-or-nil some?) #(with-meta % nil) identity) node)))
   macroexpanded-code))
 
 
@@ -144,17 +150,8 @@
 (defn with-meta-or-identity [obj new-meta]
   (if (and
         (instance? clojure.lang.IMeta obj)
-        (instance? clojure.lang.IObj obj)
-        ((complement instance?) clojure.lang.Namespace obj))
-    (try
+        (instance? clojure.lang.IObj obj))
       (with-meta obj new-meta)
-
-      (catch Exception e
-        (println "can't assoc object")
-        (cprint obj)
-        (println "with meta")
-        (cprint new-meta)
-        obj))
     obj))
 
 (defn macroexpand-all

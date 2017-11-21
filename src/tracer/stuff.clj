@@ -9,19 +9,6 @@
     [potemkin.walk])
   
   
-  (:require [clojure.java.jdbc :as jdbc]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [medley.core :as m]
-            [metabase.util :as u]
-            [metabase.util.schema :as su]
-            [schema.core :as s])
-  (:import java.sql.SQLException)
-  
-  
-  
-  
-  
   
   )
 
@@ -229,17 +216,7 @@
         ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 ^:foo1 (inc 10))))))
 
 (dbg
-(defn- dox-for-schema
-  "Look up the docstring for SCHEMA for use in auto-generated API documentation.
-   In most cases this is defined by wrapping the schema with `with-api-error-message`."
-  [schema]
-  (if-not schema
-    ""
-    (or (su/api-error-message schema)
-        (log/warn "We don't have a nice error message for schema:"
-                  schema
-                  "Consider wrapping it in `su/with-api-error-message`."))))
-
+1
   )
 
 

@@ -145,7 +145,15 @@
   (if (and
         (instance? clojure.lang.IMeta obj)
         (instance? clojure.lang.IObj obj))
-    (with-meta obj new-meta)
+    (try
+      (with-meta obj new-meta)
+
+      (catch Exception e
+        (println "can't assoc object")
+        (cprint obj)
+        (println "with meta")
+        (cprint new-meta)
+        obj))
     obj))
 
 (defn macroexpand-all

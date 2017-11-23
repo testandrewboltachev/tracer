@@ -162,6 +162,9 @@
       (if
         (seq? x)
 
+        (let [
+              _ (println "got x" x)
+              r1
         (with-meta-or-identity
           (try
             (macroexpand x)
@@ -169,7 +172,10 @@
               (println "Can't macroexpand")
               (cprint x)
               ))
-          (meta x))
+          (meta x))]
+          (println "r1")
+          (cprint r1)
+          r1)
 
         x)]
         ;(println (pr-str x) "return" (pr-str r))
@@ -178,8 +184,8 @@
 
 
 (defmacro dbg [body]
-  (println "got something")
-  (cprint body {:print-meta true})
+  ;(println "got something")
+  ;(cprint body {:print-meta true})
   (let [code
         (macroexpand-all body)
         _ (do

@@ -156,7 +156,8 @@
 
 (defn macroexpand-all
   [form]
-  (potemkin.walk/prewalk
+  (clojure.walk/macroexpand-all form)
+  #_(potemkin.walk/prewalk
     (fn [x]
       (let [r
       (if

@@ -158,6 +158,7 @@
   [form]
   (potemkin.walk/prewalk
     (fn [x]
+      (try
       (let [r
       (if
         (seq? x)
@@ -173,7 +174,13 @@
 
         x)]
         ;(println (pr-str x) "return" (pr-str r))
-        r))
+        r)
+        
+        (catch Exception e
+          (println "Error while macroexpand-all")
+          (cprint x)
+          (cprint e)
+          (throw e))))
     form))
 
 

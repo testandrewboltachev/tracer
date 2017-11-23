@@ -163,7 +163,9 @@
         (seq? x)
 
         (let [
-              _ (println "got x" x)
+              _ (do
+                  (println "got x")
+                  (cprint x))
               r1
         (with-meta-or-identity
           (try
@@ -175,6 +177,9 @@
           (meta x))]
           (println "r1")
           (cprint r1)
+          (println "r2")
+          (cprint (clojure.walk/macroexpand-all x))
+          (println "..")
           r1)
 
         x)]

@@ -154,10 +154,7 @@
       (with-meta obj new-meta)
     obj))
 
-(defn macroexpand-all
-  [form]
-  (potemkin.walk/prewalk
-    (fn [x]
+(defn mexpand1 [x]
       (let [r
       (if
         (seq? x)
@@ -185,6 +182,11 @@
         x)]
         ;(println (pr-str x) "return" (pr-str r))
         r))
+
+(defn macroexpand-all
+  [form]
+  (potemkin.walk/prewalk
+    mexpand1
     form))
 
 

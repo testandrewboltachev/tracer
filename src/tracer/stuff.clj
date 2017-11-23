@@ -192,7 +192,8 @@
     (catch Exception e
       (println "failed to macroexpand-all")
       (cprint form)
-      (throw (java.lang.Exception. "foo"))
+      (throw e ;(java.lang.Exception. "foo")
+             )
       )))
 
 

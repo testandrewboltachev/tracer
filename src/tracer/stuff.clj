@@ -185,9 +185,15 @@
 
 (defn macroexpand-all
   [form]
-  (potemkin.walk/prewalk
-    mexpand1
-    form))
+  (try
+          (potemkin.walk/prewalk
+            mexpand1
+            form)
+    (catch Exception e
+      (println "failed to macroexpand-all")
+      (cprint form)
+      (throw (java.lang.Exception. "foo"))
+      )))
 
 
 (defmacro dbg [body]

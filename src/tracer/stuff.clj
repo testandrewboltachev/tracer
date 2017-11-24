@@ -242,6 +242,7 @@
 
 (defn macroexpand-all
   [form]
+<<<<<<< HEAD
   (try
           (prewalk
             mexpand1
@@ -251,6 +252,11 @@
       (cprint form)
       (throw (java.lang.Exception. "foo"))
       )))
+=======
+  (potemkin.walk/prewalk
+    mexpand1
+    form))
+>>>>>>> parent of e8fd43a... test me
 
 
 (defmacro dbg [body]

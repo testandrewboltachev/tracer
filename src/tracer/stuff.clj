@@ -7,31 +7,6 @@
     [clojure.tools.logging :as log]
     [tracer.symbols :refer [symbols]]
     [potemkin.walk])
-  
-
-  (:require [cheshire.core :as json]
-            [clojure.data.csv :as csv]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [compojure.core :refer [POST]]
-            [dk.ative.docjure.spreadsheet :as spreadsheet]
-            [metabase
-             [middleware :as middleware]
-             [query-processor :as qp]
-             [util :as u]]
-            [metabase.api.common :as api]
-            [metabase.api.common.internal :refer [route-fn-name]]
-            [metabase.models
-             [card :refer [Card]]
-             [database :as database :refer [Database]]
-             [query :as query]]
-            [metabase.query-processor.util :as qputil]
-            [metabase.util.schema :as su]
-            [schema.core :as s])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]
-           org.apache.poi.ss.usermodel.Cell)
-  
-  
   )
 
 (def stuff-ch (chan))
@@ -242,21 +217,9 @@
 
 (defn macroexpand-all
   [form]
-<<<<<<< HEAD
-  (try
-          (prewalk
-            mexpand1
-            form)
-    (catch Exception e
-      (println "failed to macroexpand-all")
-      (cprint form)
-      (throw (java.lang.Exception. "foo"))
-      )))
-=======
   (potemkin.walk/prewalk
     mexpand1
     form))
->>>>>>> parent of e8fd43a... test me
 
 
 (defmacro dbg [body]
@@ -301,20 +264,6 @@
     #_(println
       (dbg
         ^:line1 (identity ^{:line "bar"} (-> 1 ^{:bar "buz"} (plus42 ^:foo1 (inc 10))))))
-
-(dbg ^{:row 54, :col 1, :end-row 64, :end-col 124, :filename "/data1/andrey/stuff/projects/cljtracer/dbgadder/../metabase/src/metabase/api/dataset.clj"} (api/defendpoint POST "/"
-  "Execute a query and retrieve the results in the usual format."
-  [:as {{:keys [database], :as query} :body}]
-  {database s/Int}
-  ;; don't permissions check the 'database' if it's the virtual database. That database doesn't actually exist :-)
-  (when-not (= database database/virtual-id)
-    (api/read-check Database database))
-  ;; add sensible constraints for results limits on our query
-  (let [source-card-id (query->source-card-id query)]
-    (qp/process-query-and-save-execution! (assoc query :constraints default-query-constraints)
-      {:executed-by api/*current-user-id*, :context :ad-hoc, :card-id source-card-id, :nested? (boolean source-card-id)}))))
-
-
 
 #_(dbg
 1
